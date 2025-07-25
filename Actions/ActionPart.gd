@@ -1,3 +1,2 @@
-class_name ActionPart extends Node
-
+@abstract class_name ActionPart extends Resource
 var action: Action

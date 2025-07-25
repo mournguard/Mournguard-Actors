@@ -1,4 +1,4 @@
-[![Godot](https://img.shields.io/badge/Godot_Engine-4.4dev5-blue?logo=godotengine)](https://godotengine.org)
+[![Godot](https://img.shields.io/badge/Godot_Engine-4.5beta3-blue?logo=godotengine)](https://godotengine.org)
 # Mournguard Actors
 Actors for the Mournguard ECS system.
 

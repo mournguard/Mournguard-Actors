@@ -1,0 +1,16 @@
+class_name SubjectNull extends ActionSubject
+
+func get_tags() -> Array[Action.Tags]: return [Action.Tags.SUBJECT_IS_NULL]
+
+func retrieve() -> Variant: return null
+
+func cancel() -> void: pass
+
+func abort() -> void: pass
+
+func validate() -> bool: return true
+
+func prepare() -> bool: return true
+
+func serialize() -> String:
+	return ""

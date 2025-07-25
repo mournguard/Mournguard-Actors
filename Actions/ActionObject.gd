@@ -1,15 +1,8 @@
-class_name ActionObject extends ActionPart
-
-func get_tags() -> Array[Action.Tags]: return []
-
-func retrieve():
-	return null
-
-func abort() -> void:
-	return
-
-func validate() -> bool:
-	return true
-
-func prepare() -> void:
-	return
+@abstract class_name ActionObject extends ActionPart
+@abstract func get_tags() -> Array[Action.Tags]
+@abstract func retrieve() -> Variant
+@abstract func cancel() -> void
+@abstract func abort() -> void
+@abstract func validate() -> bool
+@abstract func prepare() -> bool
+@abstract func serialize() -> String

@@ -1,18 +1,9 @@
-class_name ActionVerb extends ActionPart
-
-func get_tags() -> Array[Action.Tags]: return []
-
-func execute() -> void:
-	pass
-
-func abort() -> void:
-	return
-
-func validate() -> bool:
-	return true
-
-func update() -> void:
-	return
-
-func prepare() -> void:
-	return
+@abstract class_name ActionVerb extends ActionPart
+@abstract func execute() -> void
+@abstract func cancel() -> void
+@abstract func abort() -> void
+@abstract func validate() -> bool
+@abstract func update() -> void
+@abstract func prepare() -> bool
+@abstract func get_distance() -> float
+@abstract func serialize() -> String
