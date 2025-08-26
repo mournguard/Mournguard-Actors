@@ -9,6 +9,7 @@ enum Tags {
 	SUBJECT_IS_NULL,
 	SUBJECT_IS_ENTITY,
 	SUBJECT_IS_ITEM_DROP,
+	SUBJECT_IS_ITEM_CONTAINER,
 	SUBJECT_IS_ABILITY_TARGET,
 	OBJECT_IS_NULL,
 	OBJECT_IS_STRING,
@@ -44,14 +45,28 @@ var child: Action
 var subject: ActionSubject
 var verb: ActionVerb
 var object: ActionObject
+var finished: bool = false
 
 func own_parts() -> void:
 	subject.action = self
 	verb.action = self
 	object.action = self
 
+func disown_parts() -> void:
+	subject.action = null
+	verb.action = null
+	object.action = null
+
 func prepare() -> bool:
-	if actor.debug: print_debug(actor.E().name + " → Prepare → " + get_script().get_global_name())
+	if actor.debug: print_debug(actor.E().name + " → Prepare → " + name)
+
+	if verb.get_distance():
+		if actor.E().global_position.distance_to(verb.get_position()) > verb.get_distance():
+			var dir := verb.get_position() - actor.E().global_position
+			var move_action := MoveAction.new(verb.get_position() - dir.normalized() * (verb.get_distance() - actor.C(Body).get_navigation_agent().target_desired_distance))
+			move_action.child = self
+			actor.insert_action(move_action, self)
+			return false
 
 	var is_ready := subject.prepare() and verb.prepare() and object.prepare()
 
@@ -64,18 +79,22 @@ func update() -> void:
 	verb.update()
 
 func execute() -> void:
-	if actor.debug: print_debug(actor.E().name + " → Execute → " + get_script().get_global_name())
+	if actor.debug: print_debug(actor.E().name + " → Execute → " + name)
 	verb.execute()
 
 func validate() -> bool:
-	return subject.validate() and verb.validate() and object.validate()
+	return !finished and subject.validate() and object.validate() and verb.validate()
 
 func complete() -> void:
-	if actor.debug: print_debug(actor.E().name + " → Complete → " + get_script().get_global_name())
+	if actor.debug: print_debug(actor.E().name + " → Complete → " + name)
+
+	finished = true
+	disown_parts()
+
 	completed.emit(self)
 
 func cancel() -> void:
-	if actor.debug: print_debug(actor.E().name + " → Cancel → " + get_script().get_global_name())
+	if actor.debug: print_debug(actor.E().name + " → Cancel → " + name)
 	var c:Action = self
 
 	var chain: Array[Action] = []
@@ -90,25 +109,28 @@ func cancel() -> void:
 	verb.cancel()
 	object.cancel()
 
+	finished = true
+	disown_parts()
+
 	canceled.emit(self)
 
 func abort() -> void:
-	if actor.debug: print_debug(actor.E().name + " → Abort → " + get_script().get_global_name())
-	var c:Action = self
-
-	var chain: Array[Action] = []
-	while c.child:
-		chain.insert(0, c.child)
-		c = c.child
-
-	for action in chain:
-		action.abort()
+	if actor.debug: print_debug(actor.E().name + " → Abort → " + name)
 
 	subject.abort()
 	verb.abort()
 	object.abort()
 
+	finished = true
+	disown_parts()
+
 	aborted.emit(self)
+
+func get_position() -> Vector3:
+	return verb.get_position()
+
+func get_distance() -> float:
+	return verb.get_distance()
 
 func equals(action: Action) -> bool: return serialize() == action.serialize()
 

@@ -1,8 +1,9 @@
 @tool
 class_name Nav3DMotor extends Component
 
+# TODO: Move this in game consts now that I have them
 const UNIT_ACCELERATION = 0.2
-const ENTITY_LOOKAT_SPEED = 16
+const ENTITY_LOOKAT_SPEED = 16.0
 const UNIT_DECELERATION_DIST = 1.5
 const UNIT_MAX_DECELERATION = 0.8
 const UNIT_STEERING_STRENGTH = 2.0
@@ -11,14 +12,11 @@ signal movement_start
 signal movement_stop
 
 var _lookat_target: Vector3
-var _target_position: Vector3
 var _current_velocity: Vector3
 var _target_velocity: Vector3
 
-var _character: CharacterBody3D:
-	get(): return C(Body3DCharacter).get_collision_object() as CharacterBody3D
-var _navigation_agent: NavigationAgent3D:
-	get(): return C(Body3DCharacter).get_navigation_agent() as NavigationAgent3D
+var _character: CharacterBody3D
+var _navigation_agent: NavigationAgent3D
 
 func move_to(global_position: Vector3) -> void:
 	_navigation_agent.target_position = global_position
@@ -27,13 +25,13 @@ func move_to(global_position: Vector3) -> void:
 func _get_configuration_requirements() -> Array[Variant]: return [Body3DCharacter, Stats]
 
 func _ready() -> void:
+	_character = C(Body3DCharacter).get_collision_object()
+	_navigation_agent = C(Body3DCharacter).get_navigation_agent()
 	_navigation_agent.velocity_computed.connect(_on_velocity_computed)
 	_stop()
 
 func _physics_process(delta: float) -> void:
 	if Engine.is_editor_hint(): return
-
-	if not _character or not _navigation_agent: return
 
 	if not _navigation_agent.is_navigation_finished():
 		_steer()
@@ -69,7 +67,7 @@ func _update_velocity() -> void:
 func _on_velocity_computed(safe_velocity: Vector3) -> void:
 	if Engine.is_editor_hint(): return
 
-	if safe_velocity.length() == 0:
+	if safe_velocity.is_equal_approx(Vector3.ZERO):
 		return
 
 	_current_velocity = safe_velocity
@@ -95,10 +93,10 @@ func _gaze(_delta: float) -> void:
 	_character.global_rotation.y = lerp_angle(_character.global_rotation.y, looking_at.basis.get_euler().y, _delta * ENTITY_LOOKAT_SPEED)
 
 func _stop() -> void:
-	if _target_position == _character.global_position:
+	if _navigation_agent.target_position == _character.global_position:
 		return # Already stopped
 
-	_target_position = _character.global_position
+	_navigation_agent.target_position = _character.global_position
 
 	_set_velocity(Vector3.ZERO)
 	_update_velocity()
@@ -106,6 +104,6 @@ func _stop() -> void:
 
 func _get_configuration_warnings() -> PackedStringArray:
 	var warnings := super()
-	if !C(Stats).get(STATS.MOVE_SPEED):
+	if !C(Stats) || !C(Stats).get(STATS.MOVE_SPEED):
 		warnings.append("Parent [Stats] component missing required ["+STATS.MOVE_SPEED+"] stat.")
 	return warnings

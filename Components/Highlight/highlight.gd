@@ -1,24 +1,34 @@
 @tool
 class_name Highlight extends Component
 
-@export var fx: Node3D
+static var MATERIAL_PARTY := preload("uid://bk6x5i8rogq3r").duplicate()
+static var MATERIAL_FRIENDLY := preload("uid://bk6x5i8rogq3r").duplicate()
+static var MATERIAL_NEUTRAL := preload("uid://bk6x5i8rogq3r").duplicate()
+static var MATERIAL_ENEMY := preload("uid://bk6x5i8rogq3r").duplicate()
+static var MATERIAL_OBJECT := preload("uid://bk6x5i8rogq3r").duplicate()
 
 func _get_configuration_requirements() -> Array[Variant]: return [Body]
 
-var visible: bool = false:
-	set(v):
-		visible = v
+@export var meshes: Array[GeometryInstance3D] = []
+
+@export var visible: bool:
+	set(_v):
+		visible = _v
 		_sync_visible()
+
+var material := MATERIAL_NEUTRAL
 
 func _ready() -> void:
 	_sync_visible()
 
-func _process(_delta: float) -> void:
-	# This is for when the scene is opened directly in the editor
-	if !(E() is Entity): return
-
-	if fx and (fx.visible or Engine.is_editor_hint()):
-		fx.global_position = C(Body).get_collision_object().global_position
-
 func _sync_visible() -> void:
-	if fx: fx.visible = visible
+	if visible: _turn_on()
+	else: _turn_off()
+
+func _turn_on() -> void:
+	for mesh in meshes:
+		mesh.material_overlay = material
+
+func _turn_off() -> void:
+	for mesh in meshes:
+		mesh.material_overlay = null

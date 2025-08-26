@@ -47,12 +47,14 @@ func _input(event: InputEvent) -> void:
 func on_mouse_entered(fake: bool = false) -> void:
 	if !fake and HoveredInteractable != self:
 		HoveredInteractable = self
+		Input.set_default_cursor_shape(Input.CURSOR_POINTING_HAND)
 	hover_changed.emit(true)
 	_highlight_locks.lock(Lock.MouseOverLock)
 
 func on_mouse_exited(fake: bool = false) -> void:
 	if !fake and HoveredInteractable == self:
 		HoveredInteractable = null
+		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
 	hover_changed.emit(false)
 	_highlight_locks.unlock(Lock.MouseOverLock)
 
@@ -83,7 +85,8 @@ func _on_input_event(_camera: Node, event: InputEvent, _event_position: Vector3,
 			if RadialMenu.IsOpened(): RadialMenu.Close()
 
 		if event.button_index == MOUSE_BUTTON_RIGHT:
-			if !RadialMenu.IsOpened(): open_radial_menu(event.position)
+			if !RadialMenu.IsOpened():
+				open_radial_menu(event.position)
 
 func open_radial_menu(position: Vector2) -> void:
 	var menu_options := get_options()

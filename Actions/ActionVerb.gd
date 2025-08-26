@@ -6,4 +6,5 @@
 @abstract func update() -> void
 @abstract func prepare() -> bool
 @abstract func get_distance() -> float
+@abstract func get_position() -> Vector3
 @abstract func serialize() -> String

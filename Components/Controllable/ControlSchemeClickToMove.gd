@@ -25,25 +25,30 @@ func on_input(event: InputEvent, _entity: Entity) -> void:
 	if event is InputEventMouseButton and event.is_released():
 		var raycast := Game.click_ray(event.position)
 		if raycast and raycast.collider:
+			var issued_command := false
 
 			# Do not proceed if the click was on a 3D UI element and assume it will handle it.
 			if raycast.collider.collision_layer == 0b1000:
-				return
+				issued_command = true
 
 			# Do not process if the click was on an Interactable and assume it will handle it.
-			if Body.IsBodyCollider(raycast.collider):
+			elif Body.IsBodyCollider(raycast.collider):
 				if raycast.collider.get_parent().get_parent().C(Interactable):
+					issued_command = true
 					return
 
-			if event.button_index == MOUSE_BUTTON_LEFT:
+			elif event.button_index == MOUSE_BUTTON_LEFT:
 				var xform: Transform3D = Transform3D.IDENTITY
-
 				if raycast.position:
 					xform = Transform3D(Basis.IDENTITY, raycast.position)
 					_indicator.global_position = xform.origin
 					_indicator.emit_particle(xform, Vector3.ZERO, Color.TRANSPARENT, Color.TRANSPARENT, GPUParticles3D.EMIT_FLAG_POSITION)
 					var move := MoveAction.new(xform.origin)
 					_entity.C(Actor).queue_action(move)
+				issued_command = true
+
+			if issued_command and _entity.C(AI):
+				_entity.C(AI).sleep()
 
 func on_physics_process(_delta: float, _entity: Entity) -> void:
 	pass
